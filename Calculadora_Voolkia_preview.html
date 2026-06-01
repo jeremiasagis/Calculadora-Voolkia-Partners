@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Voolkia · Calculadora Partners v3</title>
+<style>
+  :root {
+    --brand: #1F3A5F;
+    --brand-2: #2E5A8A;
+    --accent: #E8EEF7;
+    --bg: #F7F9FC;
+    --ink: #1A1A1A;
+    --muted: #6B7280;
+    --ok: #2E7D32;
+    --warn: #E65100;
+    --bad: #C62828;
+    --line: #D7DBE4;
+    --card: #FFFFFF;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.5;
+  }
+  a { color: var(--brand-2); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+  header.top {
+    background: var(--brand); color: #fff;
+    padding: 20px 0 18px; border-bottom: 4px solid var(--brand-2);
+    position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow);
+  }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+  .brand { display: flex; align-items: baseline; gap: 12px; }
+  .brand .logo { font-weight: 800; font-size: 20px; letter-spacing: .02em; }
+  .brand .sub { font-size: 12px; color: #BCC9DD; }
+  nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav.tabs a {
+    color: #cfd7e5; text-decoration: none; padding: 7px 11px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  }
+  nav.tabs a:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+  section.panel { padding: 32px 0; border-bottom: 1px solid var(--line); }
+  section.panel h2 { color: var(--brand); font-size: 22px; font-weight: 700; margin: 0 0 6px; }
+  section.panel .lead { color: var(--muted); margin: 0 0 20px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  @media (max-width: 960px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px; box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0 0 12px; color: var(--brand); font-size: 16px; }
+  .card h4 { margin: 18px 0 6px; color: var(--brand-2); font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+
+  .kpi { padding: 18px 20px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .kpi .label { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .value { font-size: 24px; font-weight: 800; color: var(--brand); margin-top: 4px; }
+  .kpi .hint  { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .field { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+  .field:last-child { border-bottom: none; }
+  .field label { color: #2b2b2b; }
+  .field input, .field select {
+    width: 150px; font: inherit; font-size: 13px; padding: 6px 10px; text-align: right;
+    border: 1px solid var(--line); border-radius: 8px; background: #F1F5FB; color: #0B3B87;
+    font-weight: 600;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--brand-2); background: #fff; }
+  .field .readout { font-weight: 700; color: var(--ink); font-size: 13px; padding-right: 6px; }
+
+  .cur-switch { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.08); border-radius: 999px; padding: 4px 6px; }
+  .cur-switch button { font: inherit; border: none; background: transparent; color: #cfd7e5; padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 600; }
+  .cur-switch button.active { background: #fff; color: var(--brand); }
+  .cur-switch input { width: 80px; font: inherit; font-size: 12px; padding: 4px 8px; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; background: rgba(255,255,255,.1); color: #fff; text-align: right; font-weight: 600; }
+  .cur-switch .tc-label { font-size: 11px; color: #cfd7e5; }
+
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: #fff; }
+  .seg button {
+    font: inherit; border: none; background: transparent; padding: 7px 16px; border-radius: 999px; cursor: pointer;
+    color: var(--muted); font-weight: 600; font-size: 13px;
+  }
+  .seg button.active { background: var(--brand); color: #fff; }
+  .seg button:hover:not(.active) { color: var(--brand); }
+
+  .bar-wrap { margin-top: 14px; }
+  .bar-row { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 10px; padding: 8px 0; font-size: 12px; }
+  .bar-label { color: var(--muted); font-size: 11px; font-weight: 600; }
+  .bar-pair { display: flex; flex-direction: column; gap: 3px; }
+  .bar { height: 15px; border-radius: 4px; color: #fff; font-size: 10px; padding: 1px 7px; display: flex; align-items: center; justify-content: flex-end; font-weight: 700; overflow: hidden; white-space: nowrap; }
+  .bar-act  { background: linear-gradient(90deg, var(--brand), var(--brand-2)); }
+  .bar-flat { background: linear-gradient(90deg, #E65100, #FFB74D); }
+
+  /* Layout especial para la sección staffing: inputs compactos a la izquierda, resultado amplio a la derecha */
+  .staffing-grid { grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) minmax(420px, 1.9fr) !important; }
+  @media (max-width: 980px) { .staffing-grid { grid-template-columns: 1fr !important; } }
+
+  /* Breakdown principal */
+  .breakdown { background: #FAFBFD; border: 1px dashed var(--line); border-radius: 10px; padding: 14px 16px; margin-top: 10px; font-size: 12.5px; }
+  .breakdown-split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 1100px) { .breakdown-split { grid-template-columns: 1fr; } }
+  .breakdown-col h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+
+  .breakdown .row { display: grid; grid-template-columns: 1fr 60px auto; gap: 8px; padding: 3px 6px; align-items: baseline; }
+  .breakdown .row .pct-col { font-size: 10.5px; color: var(--muted); text-align: right; }
+  .breakdown .row .pct-col em { font-style: italic; color: #aaa; font-weight: 400; font-size: 10px; }
+  .breakdown .row.sub { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 6px; font-weight: 700; color: var(--brand-2); }
+  .breakdown .row.total { background: #f0f4fa; border-top: 1px solid var(--brand); margin-top: 4px; padding: 6px; font-weight: 800; color: var(--brand); font-size: 13px; border-radius: 3px; }
+  .breakdown .row.total .pct-col { color: var(--brand); font-weight: 700; font-size: 11px; }
+  .breakdown .row.header { background: linear-gradient(90deg, var(--brand), var(--brand-2)); color: #fff; font-weight: 700; padding: 6px 10px; margin: 10px 0 4px; border-radius: 4px; font-size: 11.5px; letter-spacing: 0.3px; }
+  .breakdown .row.header:first-child { margin-top: 0; }
+  .breakdown .row.megatotal { background: #1d3557; color: #fff; border: 2px solid #e63946; margin-top: 8px; padding: 8px 10px; font-weight: 900; font-size: 14px; border-radius: 4px; }
+  .breakdown .row.megatotal .pct-col { color: #ffd166; font-weight: 800; font-size: 13px; }
+
+  /* Toggle switch tipo iOS */
+  .toggle-field { background: #eef6ff; border: 1px solid #cfe0f5; border-radius: 10px; padding: 10px 12px; margin-top: 4px; }
+  .toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .toggle .slider { position: relative; width: 38px; height: 22px; background: #cbd5e0; border-radius: 22px; transition: background .15s ease; flex-shrink: 0; }
+  .toggle .slider::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .15s ease; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle input:checked + .slider { background: var(--brand); }
+  .toggle input:checked + .slider::after { transform: translateX(16px); }
+  .toggle .toggle-label { font-size: 13px; font-weight: 600; color: var(--brand); }
+  .toggle-hint { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+
+  /* KPI strip destacada arriba del breakdown */
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+  .kpi-strip .kpi { padding: 12px 14px; }
+  .kpi-strip .kpi .label { font-size: 10.5px; }
+  .kpi-strip .kpi .value { font-size: 20px; margin-top: 2px; }
+  .kpi-strip .kpi .hint { font-size: 10px; margin-top: 2px; }
+  .kpi-strip .kpi.primary { background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%); border-color: transparent; }
+  .kpi-strip .kpi.primary .label, .kpi-strip .kpi.primary .hint { color: rgba(255,255,255,0.85); }
+  .kpi-strip .kpi.primary .value { color: #fff; }
+  @media (max-width: 720px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+
+  .note { font-size: 11px; color: var(--muted); margin-top: 10px; font-style: italic; }
+
+  footer { text-align: center; padding: 32px 24px; color: var(--muted); font-size: 12px; }
+
+  .scenarios-head { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 12px; align-items: center; margin-bottom: 8px; }
+  .scenarios-head div { font-weight: 700; color: var(--brand); text-align: center; padding: 8px; background: var(--accent); border-radius: 8px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  .scenarios-head div:first-child { text-align: left; background: transparent; text-transform: none; letter-spacing: 0; }
+  .sc-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 12px; }
+  .sc-row label { color: #2b2b2b; font-size: 12px; }
+  .sc-row input { text-align: right; font: inherit; font-size: 12px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: #F1F5FB; color: #0B3B87; font-weight: 600; }
+  .sc-row .readonly { text-align: right; font-weight: 700; color: var(--ink); padding: 5px 8px; font-size: 12px; }
+  .sc-row.total { background: var(--accent); border-radius: 8px; padding: 8px 12px; border-bottom: none; font-size: 13px; }
+  .sc-row.total label { font-weight: 700; color: var(--brand); }
+  .sc-row.total .readonly { color: var(--brand); font-weight: 800; font-size: 13px; }
+  .sc-row.sub label { font-weight: 600; color: var(--brand-2); }
+  .sc-row.sub .readonly { color: var(--brand-2); }
+
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+
+  .scheme-banner {
+    background: linear-gradient(90deg, var(--brand), var(--brand-2)); color: #fff;
+    border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  }
+  .scheme-banner .title { font-weight: 700; font-size: 14px; }
+  .scheme-banner .desc { font-size: 12px; color: #cfd7e5; }
+
+  button.reset { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 12px; cursor: pointer; }
+  button.reset:hover { color: var(--brand); border-color: var(--brand-2); }
+
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+  .pill.ok { background: #E8F5E9; color: var(--ok); }
+  .pill.warn { background: #FFF3E0; color: var(--warn); }
+  .pill.brand { background: var(--accent); color: var(--brand); }
+
+  @media print {
+    header.top { position: static; }
+    section.panel { page-break-inside: avoid; }
+    .card { box-shadow: none; border-color: #bbb; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">VOOLKIA</div>
+      <div class="sub">Calculadora Partners · LATAM</div>
+    </div>
+    <nav class="tabs">
+      <a href="#staffing">Staffing</a>
+      <a href="#proyectos">Proyectos</a>
+      <a href="#programa">Programa</a>
+    </nav>
+    <div class="cur-switch" title="Moneda para el módulo Staffing">
+      <button id="cur-ars" class="active">ARS</button>
+      <button id="cur-usd">USD</button>
+      <span class="tc-label">TC $/USD</span>
+      <input type="number" id="tc-input" value="1200" min="1" step="1">
+    </div>
+  </div>
+</header>
+
+<section class="panel" id="staffing">
+  <div class="wrap">
+    <h2>Staffing · por perfil <span class="pill brand" id="cur-badge">ARS</span></h2>
+    <p class="lead">Replica tu modelo de costos por colaborador: sueldo bruto, aportes, contribuciones, previsiones, facturación y las modalidades de comisión del partner según el componente aplicable (R con búsqueda, S sin búsqueda, T takeover). Cambiá entre ARS y USD desde el selector arriba.</p>
+    <div class="grid-3 staffing-grid">
+      <div class="card">
+        <h3>A · Datos del colaborador</h3>
+        <div class="field"><label>Sueldo bruto mensual</label><input type="text" inputmode="numeric" id="s-sb" value="0" data-money="1" placeholder="Ingresá el SB..."></div>
+        <div class="field"><label>Presentismo (% del SB)</label><input type="number" id="s-pres" value="0" step="0.01"></div>
+        <div class="field"><label>Ticket Restaurant ($ fijo)</label><input type="text" inputmode="numeric" id="s-tkr" value="0" data-money="1"></div>
+        <div class="field"><label>Ticket Canasta (% del SB)</label><input type="number" id="s-tkc" value="0" step="0.01"></div>
+        <div class="field"><label>Equipamiento ($ fijo)</label><input type="text" inputmode="numeric" id="s-eq" value="0" data-money="1"></div>
+        <div class="field"><label>Base horaria mensual (hs)</label><input type="number" id="s-horas" value="168" step="1"></div>
+        <h4>B · Tipo de empresa</h4>
+        <div class="field"><label>¿Voolkia tiene cert. MiPyME?</label>
+          <select id="s-pyme">
+            <option value="1" selected>Sí (seg. social 18%)</option>
+            <option value="2">No (seg. social 20,4%)</option>
+          </select>
+        </div>
+        <h4>C · Contribuciones patronales</h4>
+        <div class="field"><label>FSR / ANSSAL (%)</label><input type="number" id="s-fsr" value="0.0135" step="0.001"></div>
+        <div class="field"><label>ART prima variable (%)</label><input type="number" id="s-artvar" value="0" step="0.005"></div>
+        <div class="field"><label>ART cuota fija ($ fijo)</label><input type="number" id="s-artfija" value="2" step="0.01"></div>
+        <h4>F · Previsiones mensuales</h4>
+        <div class="field"><label>Ausentismo (%)</label><input type="number" id="s-aus" value="0" step="0.01"></div>
+        <div class="field"><label>Plus vacacional (%)</label><input type="number" id="s-pv" value="0.0083" step="0.001"></div>
+        <div class="field"><label>SAC / aguinaldo (%)</label><input type="number" id="s-sac" value="0.0833" step="0.001"></div>
+        <div class="field"><label>Indemnización provisionada (%)</label><input type="number" id="s-ind" value="0.125" step="0.001"></div>
+      </div>
+      <div class="card">
+        <h3>G · Política de facturación</h3>
+        <div class="field"><label>Uplift / markup (× SB)</label><input type="number" id="s-uplift" value="2" step="0.1"></div>
+        <div class="field"><label>Carga financiera (% s/ fact.)</label><input type="number" id="s-cf" value="0" step="0.01"></div>
+        <div class="field"><label>IIBB (% s/ fact.)</label><input type="number" id="s-iibb" value="0" step="0.005"></div>
+        <h4>H · Comisión del partner</h4>
+        <div class="field"><label>Modalidad</label>
+          <select id="s-mod">
+            <option value="1" selected>Componente R · Opción A · 1,2 × SB en 12 cuotas</option>
+            <option value="2">Componente R · Opción B · 3% Facturación Anual en 1 pago</option>
+            <option value="3">Componente S · 3% Facturación Anual en 1 pago (sin búsqueda)</option>
+            <option value="4">Componente T · 3% Facturación Anual en 1 pago (takeover)</option>
+            <option value="0">Sin comisión al partner (baseline)</option>
+          </select>
+        </div>
+        <div class="field"><label>Multiplicador sobre SB</label><div class="readout" id="s-mul-readout">—</div></div>
+        <div class="field"><label>Cuotas</label><div class="readout" id="s-cuotas-readout">—</div></div>
+        <div class="field toggle-field">
+          <label class="toggle"><input type="checkbox" id="s-spiff"><span class="slider"></span><span class="toggle-label">Pagar Spiff de arranque</span></label>
+          <small class="toggle-hint">+25% s/ comisión · tope USD 1.500 por deal · aplica a los primeros 3 deals dentro de 90 días desde la firma del Contrato Marco.</small>
+        </div>
+        <div class="field"><label>Comisión total partner <span id="s-spiff-badge" style="display:none;" class="pill brand">+spiff</span></label><div class="readout" id="s-comtot-readout">—</div></div>
+        <div class="field"><label>Cuota mensual del partner</label><div class="readout" id="s-commes-readout">—</div></div>
+        <h4>I · Comisión Comercial Voolkia</h4>
+        <div class="field"><label>% s/ util. neta previa (D21 xlsx)</label><input type="number" id="s-voolcom" value="0.075" step="0.005"></div>
+      </div>
+      <div class="card" style="background: linear-gradient(180deg, #F8FAFD, #fff);">
+        <h3>Resultado por colaborador · mensual</h3>
+
+        <div class="kpi-strip">
+          <div class="kpi"><div class="label">Facturación</div><div class="value" id="s-fact">—</div><div class="hint">SB × markup</div></div>
+          <div class="kpi"><div class="label">Costo total empleado</div><div class="value" id="s-costo-kpi">—</div><div class="hint">Rem + Contrib. + Prev.</div></div>
+          <div class="kpi primary"><div class="label">Utilidad Final Voolkia</div><div class="value" id="s-util-final">—</div><div class="hint" id="s-margen-pct">—</div></div>
+          <div class="kpi"><div class="label">Comisión partner (mes)</div><div class="value" id="s-commes-kpi">—</div><div class="hint" id="s-mod-kpi-hint">Modalidad elegida</div></div>
+        </div>
+
+        <div class="breakdown">
+          <div class="breakdown-split">
+            <div class="breakdown-col">
+              <h4>◦ Costo laboral</h4>
+              <div id="s-breakdown-left"></div>
+            </div>
+            <div class="breakdown-col">
+              <h4>◦ Resultado financiero</h4>
+              <div id="s-breakdown-right"></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="note" style="margin-top: 12px;">Secciones del <em>Voolkia_Modelo_Costos_Partners.xlsx</em> · <strong>I</strong> Remuneración bruta → <strong>III</strong> Contribuciones → <strong>IV</strong> Previsiones → <strong>V</strong> Costo total → <strong>A</strong> Facturación → <strong>B</strong> Comisión partner → <strong>C</strong> Utilidad Final. Ingresá el SB para disparar los cálculos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="proyectos">
+  <div class="wrap">
+    <h2>Proyectos · Componente P</h2>
+    <p class="lead">Proyectos de desarrollo, IA, ciberseguridad, infraestructura y servicios profesionales referidos por el partner. Comisión 3% flat sobre lo efectivamente cobrado, devengada por hito.</p>
+    <div class="scheme-banner">
+      <div>
+        <div class="title">Comisión 3% · sobre cobros efectivos</div>
+        <div class="desc">Sin escalas ni tramos. La comisión se devenga por hito en proporción al cobro de Voolkia al cliente final. Si un hito no se cobra, la comisión correspondiente queda en pausa hasta el ingreso real.</div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top: 20px;">
+      <div class="card">
+        <h3>Simulador de un proyecto</h3>
+        <div class="field"><label>Valor total del proyecto (<span id="deal-cur-lbl">USD</span>)</label><input type="number" id="deal-value" value="100000" min="0" step="5000"></div>
+        <div class="field"><label>Cantidad de hitos</label>
+          <select id="deal-hitos">
+            <option value="1">1 hito (pago único)</option>
+            <option value="2">2 hitos</option>
+            <option value="3">3 hitos</option>
+            <option value="4" selected>4 hitos</option>
+            <option value="6">6 hitos</option>
+            <option value="12">12 hitos (mensual)</option>
+          </select>
+        </div>
+        <div class="field"><label>¿Aplica Spiff de arranque?</label>
+          <select id="deal-spiff">
+            <option value="no" selected>No</option>
+            <option value="si">Sí (+25% sobre comisión, tope USD 1.500)</option>
+          </select>
+          <small class="toggle-hint">Aplica solo a los primeros 3 deals dentro de 90 días desde la firma del Contrato Marco.</small>
+        </div>
+        <p class="note" id="deal-note">El valor del proyecto se ingresa en la moneda activa (ARS o USD) seleccionada arriba a la derecha.</p>
+      </div>
+      <div class="card">
+        <h3>Desglose por hito</h3>
+        <div class="breakdown" id="deal-breakdown"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;">
+          <div class="kpi"><div class="label">Total al partner</div><div class="value" id="deal-total">—</div><div class="hint">Comisión total proyecto</div></div>
+          <div class="kpi"><div class="label">% efectivo</div><div class="value" id="deal-pct">—</div><div class="hint">Sobre valor del deal</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 20px;">
+      <h3>Reglas que aplican siempre</h3>
+      <ul style="margin: 0 0 0 18px; padding: 0; font-size: 13px; line-height: 1.8;">
+        <li><strong>Devengo contra cobro efectivo.</strong> La comisión nace con el pago del cliente, no con la emisión de la factura.</li>
+        <li><strong>Cross-sell 12 meses.</strong> Si dentro de los 12 meses desde la primera SS el cliente contrata otro servicio (staffing, takeover, otro proyecto), también devenga comisión al partner.</li>
+        <li><strong>Sin clawback.</strong> En modalidades de pago único (R-B, S, T), si el cliente discontinúa antes de los 12 meses, Voolkia asume la pérdida sin reclamar al partner.</li>
+        <li><strong>Visibilidad.</strong> El partner accede a copia de la factura emitida al cliente para verificar la base.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="programa">
+  <div class="wrap">
+    <h2>Estructura del programa en una mirada</h2>
+    <p class="lead">Referencia rápida: cuatro componentes, comisión 3% (con opción A en Componente R), Deal Registration con tres criterios y Spiff de arranque.</p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Componentes y comisiones</h3>
+        <table style="width:100%; border-collapse: collapse; font-size: 13px;">
+          <thead><tr style="background: var(--brand); color: #fff;"><th style="padding:8px; text-align:left;">Componente</th><th style="padding:8px; text-align:left;">Comisión</th><th style="padding:8px; text-align:left;">Pago</th></tr></thead>
+          <tbody>
+            <tr style="background:#FAFBFD;"><td style="padding:8px;"><strong>R · Opción A</strong><br>Staffing con búsqueda</td><td style="padding:8px;">1,2 × SB</td><td style="padding:8px;">12 cuotas mensuales, contra cobro efectivo</td></tr>
+            <tr><td style="padding:8px;"><strong>R · Opción B</strong><br>Staffing con búsqueda</td><td style="padding:8px;">3% Facturación Anual</td><td style="padding:8px;">1 pago al primer cobro efectivo</td></tr>
+            <tr style="background:#FAFBFD;"><td style="padding:8px;"><strong>S</strong><br>Staffing sin búsqueda</td><td style="padding:8px;">3% Facturación Anual</td><td style="padding:8px;">1 pago al primer cobro efectivo</td></tr>
+            <tr><td style="padding:8px;"><strong>T</strong><br>Takeover</td><td style="padding:8px;">3% Facturación Anual</td><td style="padding:8px;">1 pago al primer cobro efectivo</td></tr>
+            <tr style="background:#FAFBFD;"><td style="padding:8px;"><strong>P</strong><br>Proyectos de tecnología</td><td style="padding:8px;">3% sobre cobros</td><td style="padding:8px;">Por hito, contra cobro efectivo</td></tr>
+          </tbody>
+        </table>
+        <p class="note">La elección entre Opción A y B en Componente R es irrevocable y se define al firmar la SS.</p>
+      </div>
+      <div class="card">
+        <h3>Frentes de servicio</h3>
+        <p style="margin: 0 0 10px; font-size: 13px;">Tres frentes principales sobre los que el partner puede estar atento a oportunidades:</p>
+        <ul style="margin: 0 0 10px 18px; padding: 0; font-size: 13px; line-height: 1.7;">
+          <li><strong>Inteligencia artificial y automatización:</strong> agentes, automatización de procesos, ciencia de datos, mejora de atención al cliente.</li>
+          <li><strong>Cloud, ciberseguridad e infraestructura:</strong> ordenar accesos, proteger datos, controlar costos cloud, certificaciones (ISO, SOC 2).</li>
+          <li><strong>Producto digital y desarrollo a medida:</strong> aplicaciones, integraciones, modernización de software legacy.</li>
+        </ul>
+        <p class="note">Voolkia ofrece diagnóstico inicial gratuito al cliente final sobre cualquier oportunidad registrada por el partner.</p>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top: 16px;">
+      <div class="card">
+        <h3>Deal Registration · 3 criterios mínimos</h3>
+        <ol style="margin: 0 0 0 18px; padding: 0; font-size: 13px; line-height: 1.7;">
+          <li><strong>Contacto nominal:</strong> persona identificada con nombre, cargo y datos, con capacidad de decisión o influencia real.</li>
+          <li><strong>Intro caliente:</strong> presentación efectiva del partner al contacto del cliente (reunión, llamada o intro escrita).</li>
+          <li><strong>Propuesta formal en 90 días:</strong> voluntad real del cliente de avanzar a propuesta económica de Voolkia dentro de los 90 días desde el registro.</li>
+        </ol>
+        <p class="note">Protección de cuenta 6 meses prorrogable por períodos de 3. Validación en 5 días hábiles. Regla anti-ruido: 5 registros + &lt;15% conversión a propuesta = pausa y revisión.</p>
+      </div>
+      <div class="card">
+        <h3>Incentivos y reglas comunes</h3>
+        <p style="margin: 0 0 8px; font-size: 13px;"><strong>Spiff de arranque:</strong> +25% sobre la comisión estándar en los primeros 3 deals dentro de los 90 días desde la firma. Tope USD 1.500 por deal.</p>
+        <p style="margin: 8px 0 0; font-size: 13px;"><strong>Cross-sell 12 meses:</strong> dentro de los 12 meses desde la primera SS, todo nuevo servicio sobre el cliente devenga comisión al partner.</p>
+        <p style="margin: 8px 0 0; font-size: 13px;"><strong>Pago contra cobro efectivo:</strong> la comisión nace con el cobro real del cliente, no con la emisión de la factura. Sin clawback si el cliente discontinúa antes de los 12 meses en pago único.</p>
+        <p style="margin: 8px 0 0; font-size: 13px;"><strong>Visibilidad:</strong> el partner accede a copia de la factura emitida al cliente para verificar la base de cálculo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Voolkia · Programa de Partners Estratégicos · Documento interno
+</footer>
+
+<script>
+(() => {
+  const state = {
+    currency: 'ARS',
+    tc: 1200,
+    staffing: {
+      sb: 0, pres: 0, tkr: 0, tkc: 0, eq: 0,
+      horasMes: 168,
+      pyme: '1',
+      fsr: 0.0135,
+      artVar: 0,
+      artFija: 2,
+      aus: 0, pv: 0.0083, sac: 0.0833, ind: 0.125,
+      uplift: 2, cf: 0, iibb: 0,
+      mod: '1',
+      voolcom: 0.075,
+      spiff: false
+    },
+    flatRate: 0.03,
+    spiffPct: 0.25,
+    spiffCap: 1500
+  };
+
+  const defaults = JSON.parse(JSON.stringify(state));
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  const USD = v => {
+    if (!isFinite(v)) return '—';
+    const sign = v < 0 ? '-' : '';
+    const abs = Math.abs(v);
+    return sign + 'USD ' + abs.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+  };
+  const INT = v => !isFinite(v) ? '—' : Math.round(v).toLocaleString('es-AR');
+  const PCT = v => !isFinite(v) ? '—' : (v * 100).toLocaleString('es-AR', { maximumFractionDigits: 2 }) + '%';
+  const parseMoney = v => {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'number') return v;
+    const s = String(v).replace(/[^\d]/g, '');
+    return s ? parseFloat(s) : 0;
+  };
+  const fmtMoneyInput = v => (parseMoney(v) || 0).toLocaleString('es-AR');
+  const MONEY = v => {
+    if (!isFinite(v)) return '—';
+    if (state.currency === 'USD') {
+      return 'USD ' + (v / state.tc).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+    }
+    return '$ ' + v.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+  };
+
+  function commission(value) {
+    const total = value * state.flatRate;
+    return { total, rows: [{ label: '3% × ' + USD(value), amount: total }] };
+  }
+
+  function staffingResult() {
+    const s = state.staffing;
+    const sb = s.sb;
+    const segSocPct = s.pyme === '1' ? 0.18 : 0.204;
+
+    const presAmount = sb * s.pres;
+    const subtotalRem = sb + presAmount;
+    const tkrAmount = s.tkr;
+    const tkcAmount = sb * s.tkc;
+    const subtotalNoRem = tkrAmount + tkcAmount;
+    const remBruta = subtotalRem + subtotalNoRem;
+
+    // Contribuciones patronales desglosadas (secciones del Excel)
+    const segSocAmount  = subtotalRem * segSocPct;
+    const osPatAmount   = subtotalRem * 0.06;
+    const fsrAmount     = subtotalRem * s.fsr;
+    const artVarAmount  = subtotalRem * s.artVar;
+    const artFijaAmount = s.artFija;
+    const osTicketsAmount   = subtotalNoRem * 0.06;
+    const comAdminTickets   = subtotalNoRem * 0.05;
+    const contribPatronales = segSocAmount + osPatAmount + fsrAmount + artVarAmount + artFijaAmount + osTicketsAmount + comAdminTickets;
+
+    // Previsiones desglosadas
+    const ausAmount = subtotalRem * s.aus;
+    const pvAmount  = subtotalRem * s.pv;
+    const sacAmount = subtotalRem * s.sac;
+    const indAmount = subtotalRem * s.ind;
+    const eqAmount  = s.eq;
+    const previsiones = ausAmount + pvAmount + sacAmount + indAmount + eqAmount;
+
+    const costoTotal = remBruta + contribPatronales + previsiones;
+
+    const costoPorHora = s.horasMes > 0 ? costoTotal / s.horasMes : 0;
+
+    // FLUJO ALINEADO CON "Resultado Voolkia" xlsx:
+    //   Facturación = SB × Uplift
+    //   Gastos Totales = Costo Laboral + IIBB + CF
+    //   Utilidad Bruta = Facturación − Gastos Totales  (D9)
+    //   (−) Cuota mensual partner  → Util. Neta previa (D20)
+    //   (−) Com. Comercial Voolkia 7,5% × D20  → Util. Final (D22)
+    const facturacion = sb * s.uplift;
+    const iibb = facturacion * s.iibb;
+    const cf = facturacion * s.cf;
+    const gastosTotales = costoTotal + iibb + cf;
+    const utilBruta = facturacion - gastosTotales;
+
+    // Modalidades del modelo nuevo:
+    //   '1' = Componente R · Opción A · 1,2 × SB en 12 cuotas
+    //   '2' = Componente R · Opción B · 3% Facturación Anual en 1 pago
+    //   '3' = Componente S · 3% Facturación Anual en 1 pago (sin búsqueda)
+    //   '4' = Componente T · 3% Facturación Anual en 1 pago (takeover)
+    //   '0' = Sin comisión (baseline)
+    const facturacionAnual = facturacion * 12;
+    let comTotalBase, cuotas, mul;
+    if (s.mod === '1') {
+      // R-A: 1,2 × SB en 12 cuotas
+      mul = 1.2;
+      cuotas = 12;
+      comTotalBase = sb * mul;
+    } else if (s.mod === '2' || s.mod === '3' || s.mod === '4') {
+      // R-B / S / T: 3% × Facturación Anual en 1 pago
+      mul = 0.03;
+      cuotas = 1;
+      comTotalBase = facturacionAnual * mul;
+    } else {
+      // Sin comisión
+      mul = 0;
+      cuotas = 1;
+      comTotalBase = 0;
+    }
+
+    // Spiff de arranque: +25% sobre com. total, tope USD 1.500 (convertido a ARS por el TC)
+    const spiffActive = !!s.spiff && comTotalBase > 0;
+    const spiffCapUsd = state.spiffCap; // 1500
+    const spiffCapArs = spiffCapUsd * state.tc;
+    const spiffBonusRaw = spiffActive ? comTotalBase * state.spiffPct : 0;
+    const spiffBonus   = spiffActive ? Math.min(spiffBonusRaw, spiffCapArs) : 0;
+    const spiffCapped  = spiffActive && spiffBonusRaw > spiffCapArs;
+
+    const comTotal = comTotalBase + spiffBonus;
+    const comMes = comTotal / cuotas;
+
+    const utilNetaPrevia = utilBruta - comMes;
+    const comVoolkia = utilNetaPrevia * s.voolcom;
+    const utilFinal = utilNetaPrevia - comVoolkia;
+    const margenBrutoPct = facturacion > 0 ? utilBruta / facturacion : 0;
+    const margenPrevioPct = facturacion > 0 ? utilNetaPrevia / facturacion : 0;
+    const margenFinalPct = facturacion > 0 ? utilFinal / facturacion : 0;
+
+    const sbPctFact  = facturacion > 0 ? sb / facturacion : 0;
+    const gtPctFact  = facturacion > 0 ? gastosTotales / facturacion : 0;
+
+    return {
+      sb, presAmount, subtotalRem, tkrAmount, tkcAmount, subtotalNoRem, remBruta,
+      segSocPct, segSocAmount, osPatAmount, fsrAmount, artVarAmount, artFijaAmount,
+      osTicketsAmount, comAdminTickets, contribPatronales,
+      ausAmount, pvAmount, sacAmount, indAmount, eqAmount, previsiones,
+      costoTotal, costoPorHora,
+      facturacion, iibb, cf, gastosTotales, utilBruta, margenBrutoPct,
+      mul, cuotas, comTotalBase, spiffActive, spiffBonus, spiffCapped, spiffCapArs,
+      comTotal, comMes,
+      utilNetaPrevia, margenPrevioPct,
+      comVoolkia, utilFinal, margenFinalPct,
+      sbPctFact, gtPctFact
+    };
+  }
+
+  function renderStaffing() {
+    const s = state.staffing;
+    s.sb = parseMoney($('#s-sb').value);
+    s.pres = parseFloat($('#s-pres').value) || 0;
+    s.tkr = parseMoney($('#s-tkr').value);
+    s.tkc = parseFloat($('#s-tkc').value) || 0;
+    s.eq = parseMoney($('#s-eq').value);
+    s.horasMes = parseFloat($('#s-horas').value) || 0;
+    s.pyme = $('#s-pyme').value;
+    s.fsr = parseFloat($('#s-fsr').value) || 0;
+    s.artVar = parseFloat($('#s-artvar').value) || 0;
+    s.artFija = parseFloat($('#s-artfija').value) || 0;
+    s.aus = parseFloat($('#s-aus').value) || 0;
+    s.pv = parseFloat($('#s-pv').value) || 0;
+    s.sac = parseFloat($('#s-sac').value) || 0;
+    s.ind = parseFloat($('#s-ind').value) || 0;
+    s.uplift = parseFloat($('#s-uplift').value) || 0;
+    s.cf = parseFloat($('#s-cf').value) || 0;
+    s.iibb = parseFloat($('#s-iibb').value) || 0;
+    s.mod = $('#s-mod').value;
+    s.voolcom = parseFloat($('#s-voolcom').value) || 0;
+    s.spiff = $('#s-spiff').checked;
+
+    const r = staffingResult();
+    $('#s-mul-readout').textContent = r.mul === 0 ? '—' : r.mul.toFixed(2) + 'x';
+    $('#s-cuotas-readout').textContent = r.mul === 0 ? '—' : r.cuotas + (r.cuotas === 1 ? ' cuota' : ' cuotas');
+    $('#s-comtot-readout').textContent = MONEY(r.comTotal);
+    $('#s-commes-readout').textContent = MONEY(r.comMes);
+    $('#s-spiff-badge').style.display = r.spiffActive && r.spiffBonus > 0 ? 'inline-block' : 'none';
+
+    const bdL = $('#s-breakdown-left');
+    const bdR = $('#s-breakdown-right');
+    const hdr = txt => '<div class="row header"><span>' + txt + '</span><span class="pct-col"></span><span></span></div>';
+    const row = (label, rate, value, opts = {}) => {
+      let cls = 'row';
+      if (opts.mega) cls = 'row megatotal';
+      else if (opts.total) cls = 'row total';
+      else if (opts.sub) cls = 'row sub';
+      const rateTxt = rate !== undefined && rate !== null ? rate : '';
+      return '<div class="' + cls + '"><span>' + label + '</span><span class="pct-col">' + rateTxt + '</span><span>' + value + '</span></div>';
+    };
+    const fijo = '<em>Fijo $</em>';
+    const pctF = n => r.facturacion > 0 ? PCT(n / r.facturacion) : '—';
+
+    // ═══ COLUMNA IZQUIERDA: Costo Laboral (I · III · IV · V) ═══
+    bdL.innerHTML = [
+      hdr('I · REMUNERACIÓN BRUTA'),
+      row('Sueldo Bruto (A)', '', MONEY(r.sb)),
+      row('Presentismo', PCT(state.staffing.pres), MONEY(r.presAmount)),
+      row('→ Subtotal remunerativo', '', MONEY(r.subtotalRem), { sub: true }),
+      row('Ticket Restaurant (fijo)', fijo, MONEY(r.tkrAmount)),
+      row('Ticket Canasta', PCT(state.staffing.tkc), MONEY(r.tkcAmount)),
+      row('→ Subtotal no remunerativo', '', MONEY(r.subtotalNoRem), { sub: true }),
+      row('TOTAL Remuneración bruta', '', MONEY(r.remBruta), { total: true }),
+
+      hdr('III · CONTRIBUCIONES PATRONALES'),
+      row('Seg. social unificada', PCT(r.segSocPct), MONEY(r.segSocAmount)),
+      row('Obra Social patronal 6%', PCT(0.06), MONEY(r.osPatAmount)),
+      row('FSR / ANSSAL', PCT(state.staffing.fsr), MONEY(r.fsrAmount)),
+      row('ART prima variable', PCT(state.staffing.artVar), MONEY(r.artVarAmount)),
+      row('ART cuota fija ($)', fijo, MONEY(r.artFijaAmount)),
+      row('OS s/tickets', PCT(0.06), MONEY(r.osTicketsAmount)),
+      row('Comisión admin. tickets', PCT(0.05), MONEY(r.comAdminTickets)),
+      row('TOTAL Contribuciones', '', MONEY(r.contribPatronales), { total: true }),
+
+      hdr('IV · PREVISIONES MENSUALES'),
+      row('Ausentismo', PCT(state.staffing.aus), MONEY(r.ausAmount)),
+      row('Plus vacacional', PCT(state.staffing.pv), MONEY(r.pvAmount)),
+      row('SAC / aguinaldo', PCT(state.staffing.sac), MONEY(r.sacAmount)),
+      row('Indemnización provista', PCT(state.staffing.ind), MONEY(r.indAmount)),
+      row('Equipamiento', fijo, MONEY(r.eqAmount)),
+      row('TOTAL Previsiones', '', MONEY(r.previsiones), { total: true }),
+
+      hdr('V · RESUMEN COSTO TOTAL'),
+      row('Remuneración bruta', '', MONEY(r.remBruta)),
+      row('Contribuciones patronales', '', MONEY(r.contribPatronales)),
+      row('Previsiones', '', MONEY(r.previsiones)),
+      row('COSTO TOTAL EMPLEADO', '', MONEY(r.costoTotal), { mega: true }),
+      row('Costo por hora (÷ ' + state.staffing.horasMes + ' hs)', '', MONEY(r.costoPorHora))
+    ].join('');
+
+    // ═══ COLUMNA DERECHA: Resultado Financiero (A · B · C · Resumen) ═══
+    bdR.innerHTML = [
+      hdr('A · FACTURACIÓN Y COSTOS'),
+      row('Total a Facturar al Cliente', '—', MONEY(r.facturacion)),
+      row('Sueldo Bruto', pctF(r.sb), MONEY(r.sb)),
+      row('Contribuciones patronales', pctF(r.contribPatronales), MONEY(r.contribPatronales)),
+      row('Previsiones', pctF(r.previsiones), MONEY(r.previsiones)),
+      row('Ingresos Brutos (IIBB)', pctF(r.iibb), MONEY(r.iibb)),
+      row('Carga Financiera', pctF(r.cf), MONEY(r.cf)),
+      row('→ Total Gastos', PCT(r.gtPctFact), MONEY(r.gastosTotales), { sub: true }),
+      row('UTILIDAD BRUTA', PCT(r.margenBrutoPct), MONEY(r.utilBruta), { total: true }),
+
+      hdr('B · COMISIÓN DEL PARTNER'),
+      row('Comisión partner base', '', MONEY(r.comTotalBase)),
+      r.spiffActive ? row('+ Spiff arranque (25%' + (r.spiffCapped ? ', tope USD 1.500' : '') + ')', '', '+ ' + MONEY(r.spiffBonus), { sub: true }) : '',
+      r.spiffActive ? row('= Comisión total con spiff', '', MONEY(r.comTotal), { total: true }) : '',
+      row('Comisión partner (' + (r.cuotas === 1 ? 'pago único' : 'cuota mensual') + ')', '', '− ' + MONEY(r.comMes)),
+
+      hdr('C · RESULTADO FINANCIERO VOOLKIA'),
+      row('Utilidad Neta (antes de com. comercial)', PCT(r.margenPrevioPct), MONEY(r.utilNetaPrevia)),
+      row('Comisión comercial Voolkia', PCT(state.staffing.voolcom), '− ' + MONEY(r.comVoolkia)),
+      row('UTILIDAD NETA VOOLKIA', PCT(r.margenFinalPct), MONEY(r.utilFinal), { mega: true }),
+
+      hdr('RESUMEN EJECUTIVO'),
+      row('Total a Facturar', '—', MONEY(r.facturacion)),
+      row('Sueldo Bruto', pctF(r.sb), MONEY(r.sb)),
+      row('Contribuciones patronales', pctF(r.contribPatronales), MONEY(r.contribPatronales)),
+      row('Previsiones', pctF(r.previsiones), MONEY(r.previsiones)),
+      row('IIBB', pctF(r.iibb), MONEY(r.iibb)),
+      row('Carga Financiera', pctF(r.cf), MONEY(r.cf)),
+      row('→ Total Gastos', PCT(r.gtPctFact), MONEY(r.gastosTotales), { sub: true }),
+      row('Comisión del Partner (' + (r.cuotas === 1 ? 'pago único' : 'cuota mensual') + ')', '', '− ' + MONEY(r.comMes)),
+      row('Utilidad Neta (antes com. comercial)', PCT(r.margenPrevioPct), MONEY(r.utilNetaPrevia), { sub: true }),
+      row('Comisión Comercial Voolkia', PCT(state.staffing.voolcom), '− ' + MONEY(r.comVoolkia)),
+      row('% REAL UTILIDAD FINAL VOOLKIA', PCT(r.margenFinalPct), MONEY(r.utilFinal), { mega: true })
+    ].join('');
+
+    $('#s-fact').textContent = MONEY(r.facturacion);
+    $('#s-costo-kpi').textContent = MONEY(r.costoTotal);
+    $('#s-util-final').textContent = MONEY(r.utilFinal);
+    $('#s-margen-pct').textContent = 'Margen ' + PCT(r.margenFinalPct);
+    $('#s-commes-kpi').textContent = MONEY(r.comMes);
+    const modNames = {
+      '0': 'Sin comisión',
+      '1': 'R · Opción A · 1,2×SB/12c',
+      '2': 'R · Opción B · 3% FacAnual/1p',
+      '3': 'S · 3% FacAnual/1p',
+      '4': 'T · 3% FacAnual/1p'
+    };
+    const modName = modNames[state.staffing.mod] || 'Sin comisión';
+    $('#s-mod-kpi-hint').textContent = modName;
+    $('#cur-badge').textContent = state.currency;
+  }
+
+  // Formateador para el simulador de proyectos: muestra el valor en la moneda activa,
+  // sin conversiones (el input ya viene en la moneda activa).
+  const MONEY_PROJ = v => {
+    if (!isFinite(v)) return '—';
+    const sym = state.currency === 'USD' ? 'USD' : '$';
+    return sym + ' ' + v.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+  };
+
+  // El Spiff tiene un tope expresado en USD por contrato. Si la moneda activa es ARS,
+  // se convierte a ARS usando el TC vigente para comparar el bono contra el tope.
+  function spiffCapForCurrency() {
+    return state.currency === 'USD' ? state.spiffCap : state.spiffCap * state.tc;
+  }
+
+  function renderDeal() {
+    const value = parseFloat($('#deal-value').value) || 0;
+    const hitos = parseInt($('#deal-hitos').value) || 1;
+    const spiff = $('#deal-spiff').value === 'si';
+    // Actualizar el label de moneda en el input
+    const lbl = $('#deal-cur-lbl');
+    if (lbl) lbl.textContent = state.currency;
+    const c = commission(value);
+    const commPorHito = c.total / hitos;
+    const valorPorHito = value / hitos;
+    const rows = [];
+    for (let i = 1; i <= hitos; i++) {
+      rows.push('<div class="row"><span>Hito ' + i + ' · cobro ' + MONEY_PROJ(valorPorHito) + '</span><span>' + MONEY_PROJ(commPorHito) + '</span></div>');
+    }
+    rows.push('<div class="row sub"><span>Subtotal comisión base (3% × ' + MONEY_PROJ(value) + ')</span><span>' + MONEY_PROJ(c.total) + '</span></div>');
+    let total = c.total;
+    if (spiff) {
+      const cap = spiffCapForCurrency();
+      const bonusRaw = c.total * state.spiffPct;
+      const spiffAmt = Math.min(bonusRaw, cap);
+      total += spiffAmt;
+      const capText = state.currency === 'USD' ? 'USD ' + state.spiffCap.toLocaleString('es-AR') : '$ ' + cap.toLocaleString('es-AR');
+      rows.push('<div class="row"><span>Spiff arranque (+' + (state.spiffPct * 100) + '%' + (bonusRaw > cap ? ', recortado al tope ' + capText : '') + ')</span><span>' + MONEY_PROJ(spiffAmt) + '</span></div>');
+    }
+    rows.push('<div class="row total"><span>Total al partner</span><span>' + MONEY_PROJ(total) + '</span></div>');
+    $('#deal-breakdown').innerHTML = rows.join('');
+    $('#deal-total').textContent = MONEY_PROJ(total);
+    $('#deal-pct').textContent = value > 0 ? PCT(total / value) : '—';
+  }
+
+  function renderAll() {
+    renderDeal();
+    renderStaffing();
+  }
+
+  $('#cur-ars').addEventListener('click', () => {
+    state.currency = 'ARS';
+    $('#cur-ars').classList.add('active');
+    $('#cur-usd').classList.remove('active');
+    renderAll();
+  });
+  $('#cur-usd').addEventListener('click', () => {
+    state.currency = 'USD';
+    $('#cur-usd').classList.add('active');
+    $('#cur-ars').classList.remove('active');
+    renderAll();
+  });
+  $('#tc-input').addEventListener('input', e => {
+    state.tc = parseFloat(e.target.value) || 1;
+    renderAll();
+  });
+
+  ['deal-value', 'deal-hitos', 'deal-spiff'].forEach(id => {
+    const el = $('#' + id);
+    if (el) el.addEventListener('input', renderDeal);
+    if (el && el.tagName === 'SELECT') el.addEventListener('change', renderDeal);
+  });
+
+  ['s-sb','s-pres','s-tkr','s-tkc','s-eq','s-horas','s-pyme','s-fsr','s-artvar','s-artfija','s-aus','s-pv','s-sac','s-ind','s-uplift','s-cf','s-iibb','s-mod','s-voolcom']
+    .forEach(id => {
+      const el = $('#' + id);
+      if (el) el.addEventListener('input', renderStaffing);
+    });
+  $('#s-spiff').addEventListener('change', renderStaffing);
+
+  // Reformat money inputs on blur with es-AR thousand separators
+  ['s-sb','s-tkr','s-eq'].forEach(id => {
+    const el = $('#' + id);
+    if (!el) return;
+    el.addEventListener('blur', () => {
+      el.value = fmtMoneyInput(el.value);
+      renderStaffing();
+    });
+    el.addEventListener('focus', () => {
+      const v = parseMoney(el.value);
+      el.value = v === 0 ? '' : String(v);
+      el.select();
+    });
+  });
+
+  // Initial field population (money inputs with thousand separators)
+  $('#s-sb').value = state.staffing.sb ? fmtMoneyInput(state.staffing.sb) : '';
+  $('#s-tkr').value = state.staffing.tkr ? fmtMoneyInput(state.staffing.tkr) : '';
+  $('#s-eq').value = state.staffing.eq ? fmtMoneyInput(state.staffing.eq) : '';
+
+  // Initial render
+  renderAll();
+  // Initial render
+  renderAll();
+})();
+</script>
+</body>
+</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
